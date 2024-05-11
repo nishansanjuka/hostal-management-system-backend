@@ -8,22 +8,38 @@ datasource db {
 }
 
 model User {
-  id                       Int               @id @default(autoincrement())
-  username                 String
-  password                 String
-  email                    String
-  userType                 UserType
-  phone_number             String
-  roomAllocations          RoomAllocation[]
-  PrivateBoarding          PrivateBoarding[]
-  ExchangeRequestsFromUser ExchangeRequest[] @relation("FromUser")
-  ExchangeRequestsToUser   ExchangeRequest[] @relation("ToUser")
+  id                   Int                    @id @default(autoincrement())
+  username             String
+  password             String
+  role                 Role
+  Student              Student[]
+  PrivateBoardingOwner PrivateBoardingOwner[]
 }
 
-enum UserType {
-  STUDENT
+enum Role {
   ADMIN
   PRIVATE_BOARDING_OWNER
+  STANDARD_USER
+}
+
+model Student {
+  studentId                String            @id @unique
+  email                    String
+  phone_number             String
+  roomAllocations          RoomAllocation[]
+  ExchangeRequestsFromUser ExchangeRequest[] @relation("FromUser")
+  ExchangeRequestsToUser   ExchangeRequest[] @relation("ToUser")
+  user                     User              @relation(fields: [userId], references: [id])
+  userId                   Int
+}
+
+model PrivateBoardingOwner {
+  id              Int               @id @default(autoincrement())
+  email           String
+  phone_number    String
+  PrivateBoarding PrivateBoarding[]
+  user            User              @relation(fields: [userId], references: [id])
+  userId          Int
 }
 
 model Hostel {
@@ -50,19 +66,19 @@ enum Year {
 model Room {
   id              Int              @id @default(autoincrement())
   capacity        Int
-  facilities      String
+  beds            Int
   hostel          Hostel           @relation(fields: [hostelId], references: [id])
   hostelId        Int
   roomAllocations RoomAllocation[]
 }
 
 model RoomAllocation {
-  id     Int              @id @default(autoincrement())
-  status AllocationStatus
-  room   Room             @relation(fields: [roomId], references: [id])
-  roomId Int
-  user   User             @relation(fields: [userId], references: [id])
-  userId Int
+  id        Int              @id @default(autoincrement())
+  status    AllocationStatus
+  room      Room             @relation(fields: [roomId], references: [id])
+  roomId    Int
+  student   Student          @relation(fields: [studentId], references: [studentId])
+  studentId String
 }
 
 enum AllocationStatus {
@@ -74,10 +90,10 @@ enum AllocationStatus {
 model ExchangeRequest {
   id         Int           @id @default(autoincrement())
   status     RequestStatus
-  fromUser   User          @relation("FromUser", fields: [fromUserId], references: [id])
-  fromUserId Int
-  toUser     User          @relation("ToUser", fields: [toUserId], references: [id])
-  toUserId   Int
+  fromUser   Student       @relation("FromUser", fields: [fromUserId], references: [studentId])
+  fromUserId String
+  toUser     Student       @relation("ToUser", fields: [toUserId], references: [studentId])
+  toUserId   String
 }
 
 enum RequestStatus {
@@ -87,10 +103,10 @@ enum RequestStatus {
 }
 
 model PrivateBoarding {
-  id            Int            @id @default(autoincrement())
+  id            Int                  @id @default(autoincrement())
   boardingName  String
   location      String
-  owner         User           @relation(fields: [ownerId], references: [id])
+  owner         PrivateBoardingOwner @relation(fields: [ownerId], references: [id])
   ownerId       Int
   boardingRooms BoardingRoom[]
 }
