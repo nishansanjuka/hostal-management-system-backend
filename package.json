@@ -1,25 +1,30 @@
 {
-  "dependencies": {
-    "@types/express": "^4.17.21",
-    "express": "^4.19.2"
-  },
   "name": "hostal-management-systerm",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
-  "devDependencies": {
-    "@types/node": "^20.12.11",
-    "prisma": "^5.13.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/index.js",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "generate-types": "openapi-typescript openapi.yaml --output src/types/api.ts",
+    "build": "npm run generate-types && tsc",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate:dev": "npx prisma migrate dev",
+    "prisma:migrate:deploy": "npx prisma migrate deploy",
+    "prisma:seed": "npx ts-node prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.2",
+    "openapi-typescript": "^6.7.6",
+    "prisma": "^5.15.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.15.0"
+  }
 }

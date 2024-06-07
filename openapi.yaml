@@ -1,0 +1,705 @@
+openapi: 3.0.3
+info:
+  title: Hostel Management API
+  version: 1.0.0
+  description: API for managing hostel and private boarding systems
+servers:
+  - url: http://localhost:3000
+    description: Local server
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, PRIVATE_BOARDING_OWNER, STANDARD_USER]
+    Role:
+      type: string
+      enum:
+        - ADMIN
+        - PRIVATE_BOARDING_OWNER
+        - STANDARD_USER
+    Student:
+      type: object
+      properties:
+        studentId:
+          type: string
+        email:
+          type: string
+        phone_number:
+          type: string
+        userId:
+          type: integer
+    PrivateBoardingOwner:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        phone_number:
+          type: string
+        userId:
+          type: integer
+    Hostel:
+      type: object
+      properties:
+        id:
+          type: integer
+        hostelName:
+          type: string
+        genderType:
+          type: string
+          enum: [MALE, FEMALE, MIXED]
+        year:
+          type: string
+          enum: [FIRST, SECOND, THIRD, FOURTH]
+    Room:
+      type: object
+      properties:
+        id:
+          type: integer
+        capacity:
+          type: integer
+        beds:
+          type: integer
+        hostelId:
+          type: integer
+    RoomAllocation:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum: [ALLOCATED, AVAILABLE, REQUESTED]
+        roomId:
+          type: integer
+        studentId:
+          type: string
+    ExchangeRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum: [PENDING, ACCEPTED, REJECTED]
+        fromUserId:
+          type: string
+        toUserId:
+          type: string
+    PrivateBoarding:
+      type: object
+      properties:
+        id:
+          type: integer
+        boardingName:
+          type: string
+        location:
+          type: string
+        ownerId:
+          type: integer
+    BoardingRoom:
+      type: object
+      properties:
+        id:
+          type: integer
+        capacity:
+          type: integer
+        facilities:
+          type: string
+        boardingId:
+          type: integer
+
+paths:
+  /hostels:
+    get:
+      summary: Show all hostels details
+      responses:
+        "200":
+          description: A list of all hostels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Hostel"
+    post:
+      summary: Create a new hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Hostel"
+      responses:
+        "201":
+          description: The created hostel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hostel"
+  /hostels/{id}:
+    get:
+      summary: Get a hostel by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The hostel data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hostel"
+    put:
+      summary: Update a hostel by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Hostel"
+      responses:
+        "200":
+          description: The updated hostel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Hostel"
+    delete:
+      summary: Delete a hostel by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: The hostel was deleted
+  /hostels/{id}/rooms:
+    get:
+      summary: List all rooms
+      responses:
+        "200":
+          description: A list of rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
+    post:
+      summary: Create a new room
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Room"
+      responses:
+        "201":
+          description: The created room
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+  /hostels/{id}/rooms/{roomId}:
+    get:
+      summary: Get a room by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: roomId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The room data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+    put:
+      summary: Update a room by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: roomId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Room"
+      responses:
+        "200":
+          description: The updated room
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+    delete:
+      summary: Delete a room by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: roomId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: The room was deleted
+
+  /swap-requests:
+    get:
+      summary: Show all swap requests
+      responses:
+        "200":
+          description: A list of swap requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ExchangeRequest"
+  /swap-requests/{id}:
+    put:
+      summary: Accept or reject a swap request
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ACCEPTED, REJECTED]
+      responses:
+        "200":
+          description: The updated swap request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeRequest"
+
+  /allocate-students:
+    post:
+      summary: Allocate students to hostels
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  enum: [manual, random]
+                allocations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      studentId:
+                        type: string
+                      hostelId:
+                        type: integer
+      responses:
+        "200":
+          description: Students allocated to hostels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /users:
+    get:
+      summary: List all users
+      responses:
+        "200":
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      summary: Create a new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: The created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /users/{id}:
+    get:
+      summary: Get a user by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The user data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      summary: Update a user by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: The updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      summary: Delete a user by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: The user was deleted
+
+  /students:
+    get:
+      summary: List all students
+      responses:
+        "200":
+          description: A list of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+    post:
+      summary: Create a new student
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Student"
+      responses:
+        "201":
+          description: The created student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+  /students/{id}:
+    get:
+      summary: Get a student by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The student data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+    put:
+      summary: Update a student by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Student"
+      responses:
+        "200":
+          description: The updated student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+    delete:
+      summary: Delete a student by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: The student was deleted
+
+  /private-boarding-owners:
+    get:
+      summary: List all private boarding owners
+      responses:
+        "200":
+          description: A list of private boarding owners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PrivateBoardingOwner"
+    post:
+      summary: Create a new private boarding owner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrivateBoardingOwner"
+      responses:
+        "201":
+          description: The created private boarding owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateBoardingOwner"
+  /private-boarding-owners/{id}:
+    get:
+      summary: Get a private boarding owner by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The private boarding owner data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateBoardingOwner"
+    put:
+      summary: Update a private boarding owner by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrivateBoardingOwner"
+      responses:
+        "200":
+          description: The updated private boarding owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateBoardingOwner"
+    delete:
+      summary: Delete a private boarding owner by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: The private boarding owner was deleted
+
+  /hostels/search:
+    get:
+      summary: Search hostels
+      parameters:
+        - in: query
+          name: location
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: gender
+          required: false
+          schema:
+            type: string
+            enum: [MALE, FEMALE, MIXED]
+        - in: query
+          name: year
+          required: false
+          schema:
+            type: string
+            enum: [FIRST, SECOND, THIRD, FOURTH]
+      responses:
+        "200":
+          description: List of hostels matching the search criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    hostel:
+                      $ref: "#/components/schemas/Hostel"
+                    rooms:
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Room"
+
+  /exchange-requests/{id}/update-state:
+    put:
+      summary: Update exchange request state to available
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [AVAILABLE]
+      responses:
+        "200":
+          description: The updated exchange request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeRequest"
+
+  /apply-hostel:
+    post:
+      summary: Apply for a hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hostelId:
+                  type: integer
+                studentId:
+                  type: string
+      responses:
+        "201":
+          description: Applied for hostel
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /apply-exchange:
+    post:
+      summary: Apply for an exchange
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromUserId:
+                  type: string
+                toUserId:
+                  type: string
+      responses:
+        "201":
+          description: Applied for exchange
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /account:
+    get:
+      summary: Show account details
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The user account details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
