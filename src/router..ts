@@ -7,14 +7,12 @@ import { RoomController } from "./controller/RoomController";
 
 const router = express.Router();
 
-// Instantiate controllers
 const hostelController = new HostelController();
 const roomController = new RoomController();
 const exchangeRequestController = new ExchangeRequestController();
 const privateBoardingOwnerController = new PrivateBoardingOwnerController();
 const roomAllocationController = new RoomAllocationController();
 
-// Define routes
 router.get("/hostels", hostelController.getAllHostels);
 router.post("/hostels", hostelController.createHostel);
 router.get("/hostels/:id", hostelController.getHostelById);
