@@ -9,6 +9,14 @@ servers:
 
 components:
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
     User:
       type: object
       properties:
@@ -18,50 +26,77 @@ components:
           type: string
         password:
           type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
         role:
           type: string
-          enum: [ADMIN, PRIVATE_BOARDING_OWNER, STANDARD_USER]
-    Role:
-      type: string
-      enum:
-        - ADMIN
-        - PRIVATE_BOARDING_OWNER
-        - STANDARD_USER
+          enum: [ADMIN, STANDARD_USER]
+        student:
+          type: object
+          $ref: "#/components/schemas/Student"
+        privateBoardingOwner:
+          type: object
+          $ref: "#/components/schemas/PrivateBoardingOwner"
+
     Student:
       type: object
       properties:
         studentId:
           type: string
-        email:
-          type: string
-        phone_number:
-          type: string
         userId:
           type: integer
+        roomId:
+          type: integer
+        rooms:
+          type: array
+          items:
+            $ref: "#/components/schemas/Room"
+        exchangeRequestsFromUser:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExchangeRequest"
+        exchangeRequestsToUser:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExchangeRequest"
+
     PrivateBoardingOwner:
       type: object
       properties:
         id:
           type: integer
-        email:
-          type: string
-        phone_number:
-          type: string
         userId:
           type: integer
+        privateBoardings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrivateBoarding"
+
     Hostel:
       type: object
       properties:
         id:
           type: integer
-        hostelName:
+        name:
           type: string
         genderType:
           type: string
           enum: [MALE, FEMALE, MIXED]
+        distance:
+          type: number
+          format: float
+        location:
+          type: string
         year:
           type: string
           enum: [FIRST, SECOND, THIRD, FOURTH]
+        rooms:
+          type: array
+          items:
+            $ref: "#/components/schemas/Room"
+
     Room:
       type: object
       properties:
@@ -73,18 +108,11 @@ components:
           type: integer
         hostelId:
           type: integer
-    RoomAllocation:
-      type: object
-      properties:
-        id:
-          type: integer
-        status:
-          type: string
-          enum: [ALLOCATED, AVAILABLE, REQUESTED]
-        roomId:
-          type: integer
-        studentId:
-          type: string
+        students:
+          type: array
+          items:
+            $ref: "#/components/schemas/Student"
+
     ExchangeRequest:
       type: object
       properties:
@@ -94,20 +122,40 @@ components:
           type: string
           enum: [PENDING, ACCEPTED, REJECTED]
         fromUserId:
-          type: string
+          type: integer
+        fromUser:
+          type: object
+          $ref: "#/components/schemas/Student"
         toUserId:
-          type: string
+          type: integer
+        toUser:
+          type: object
+          $ref: "#/components/schemas/Student"
+
     PrivateBoarding:
       type: object
       properties:
         id:
           type: integer
-        boardingName:
+        name:
           type: string
         location:
           type: string
+        distance:
+          type: number
+          format: float
         ownerId:
           type: integer
+        owner:
+          type: object
+          $ref: "#/components/schemas/PrivateBoardingOwner"
+        description:
+          type: string
+        boardingRooms:
+          type: array
+          items:
+            $ref: "#/components/schemas/BoardingRoom"
+
     BoardingRoom:
       type: object
       properties:
@@ -119,11 +167,50 @@ components:
           type: string
         boardingId:
           type: integer
+        description:
+          type: string
+        rent:
+          type: number
+          format: float
 
 paths:
   /hostels:
     get:
       summary: Show all hostels details
+      parameters:
+        - in: query
+          name: location
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: gender
+          required: false
+          schema:
+            type: string
+            enum: [MALE, FEMALE, MIXED]
+        - in: query
+          name: year
+          required: false
+          schema:
+            type: string
+            enum: [FIRST, SECOND, THIRD, FOURTH]
+        - name: "limit"
+          in: "query"
+          required: false
+          description: "Limit the number of results per page (default: 10)."
+          schema:
+            type: "integer"
+            minimum: 1
+            default: 10
+        - name: "start"
+          in: "query"
+          required: false
+          description: "Start index of results (zero-based)."
+          schema:
+            type: "integer"
+            minimum: 0
+            default: 0
       responses:
         "200":
           description: A list of all hostels
@@ -133,6 +220,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Hostel"
+        "400":
+          description: Bad request
+        "500":
+          description: "Internal Server Error - Something went wrong on the server side."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     post:
       summary: Create a new hostel
       requestBody:
@@ -147,6 +242,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Hostel"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
   /hostels/{id}:
     get:
       summary: Get a hostel by ID
@@ -163,6 +262,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Hostel"
+        "400":
+          description: Bad request
+        "404":
+          description: Hostel not found
+        "500":
+          description: Internal server error
     put:
       summary: Update a hostel by ID
       parameters:
@@ -183,6 +288,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Hostel"
+        "400":
+          description: Bad request
+        "404":
+          description: Hostel not found
+        "500":
+          description: Internal server error
     delete:
       summary: Delete a hostel by ID
       parameters:
@@ -194,6 +305,13 @@ paths:
       responses:
         "204":
           description: The hostel was deleted
+        "400":
+          description: Bad request
+        "404":
+          description: Hostel not found
+        "500":
+          description: Internal server error
+
   /hostels/{id}/rooms:
     get:
       summary: List all rooms
@@ -206,6 +324,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Room"
+        "400":
+          description: Bad request
+        "404":
+          description: Hostel not found
+        "500":
+          description: Internal server error
     post:
       summary: Create a new room
       requestBody:
@@ -220,6 +344,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Room"
+        "400":
+          description: Bad request
+        "404":
+          description: Hostel not found
+        "500":
+          description: Internal server error
   /hostels/{id}/rooms/{roomId}:
     get:
       summary: Get a room by ID
@@ -241,6 +371,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Room"
+        "400":
+          description: Bad request
+        "404":
+          description: Room not found
+        "500":
+          description: Internal server error
     put:
       summary: Update a room by ID
       parameters:
@@ -266,6 +402,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Room"
+        "400":
+          description: Bad request
+        "404":
+          description: Room not found
+        "500":
+          description: Internal server error
     delete:
       summary: Delete a room by ID
       parameters:
@@ -282,8 +424,374 @@ paths:
       responses:
         "204":
           description: The room was deleted
+        "400":
+          description: Bad request
+        "404":
+          description: Room not found
+        "500":
+          description: Internal server error
 
-  /swap-requests:
+  /users:
+    get:
+      summary: List all users
+      responses:
+        "200":
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    post:
+      summary: Create a new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: The created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+  /users/{id}:
+    get:
+      summary: Get a user by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The user data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
+    put:
+      summary: Update a user by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: The updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
+    delete:
+      summary: Delete a user by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: The user was deleted
+        "400":
+          description: Bad request
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
+
+  /students:
+    get:
+      summary: List all students
+      responses:
+        "200":
+          description: A list of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    post:
+      summary: Create a new student
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Student"
+      responses:
+        "201":
+          description: The created student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+  /students/{id}:
+    get:
+      summary: Get a student by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The student data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "400":
+          description: Bad request
+        "404":
+          description: Student not found
+        "500":
+          description: Internal server error
+    put:
+      summary: Update a student by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Student"
+      responses:
+        "200":
+          description: The updated student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "400":
+          description: Bad request
+        "404":
+          description: Student not found
+        "500":
+          description: Internal server error
+    delete:
+      summary: Delete a student by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: The student was deleted
+        "400":
+          description: Bad request
+        "404":
+          description: Student not found
+        "500":
+          description: Internal server error
+
+  /private-boarding-owners:
+    get:
+      summary: List all private boarding owners
+      responses:
+        "200":
+          description: A list of private boarding owners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PrivateBoardingOwner"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    post:
+      summary: Create a new private boarding owner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrivateBoardingOwner"
+      responses:
+        "201":
+          description: The created private boarding owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateBoardingOwner"
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+  /private-boarding-owners/{id}:
+    get:
+      summary: Get a private boarding owner by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The private boarding owner data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateBoardingOwner"
+        "400":
+          description: Bad request
+        "404":
+          description: Private boarding owner not found
+        "500":
+          description: Internal server error
+    put:
+      summary: Update a private boarding owner by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrivateBoardingOwner"
+      responses:
+        "200":
+          description: The updated private boarding owner
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateBoardingOwner"
+        "400":
+          description: Bad request
+        "404":
+          description: Private boarding owner not found
+        "500":
+          description: Internal server error
+    delete:
+      summary: Delete a private boarding owner by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: The private boarding owner was deleted
+        "400":
+          description: Bad request
+        "404":
+          description: Private boarding owner not found
+        "500":
+          description: Internal server error
+
+  /exchange-requests/{id}/update-state:
+    put:
+      summary: Update exchange request state to available
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [AVAILABLE]
+      responses:
+        "200":
+          description: The updated exchange request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeRequest"
+        "400":
+          description: Bad request
+        "404":
+          description: Exchange request not found
+        "500":
+          description: Internal server error
+
+  /apply-hostel:
+    post:
+      summary: Apply for a hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hostelId:
+                  type: integer
+                studentId:
+                  type: string
+      responses:
+        "201":
+          description: Applied for hostel
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+
+  /room-requests:
     get:
       summary: Show all swap requests
       responses:
@@ -295,7 +803,37 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ExchangeRequest"
-  /swap-requests/{id}:
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+    post:
+      summary: Apply for an exchange
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromUserId:
+                  type: string
+                toUserId:
+                  type: string
+      responses:
+        "201":
+          description: Applied for exchange
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+  /room-requests/{id}:
     put:
       summary: Accept or reject a swap request
       parameters:
@@ -320,8 +858,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ExchangeRequest"
+        "400":
+          description: Bad request
+        "404":
+          description: Swap request not found
+        "500":
+          description: Internal server error
 
-  /allocate-students:
+  /allocation-students:
     post:
       summary: Allocate students to hostels
       requestBody:
@@ -352,340 +896,10 @@ paths:
                 properties:
                   message:
                     type: string
-
-  /users:
-    get:
-      summary: List all users
-      responses:
-        "200":
-          description: A list of users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/User"
-    post:
-      summary: Create a new user
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-      responses:
-        "201":
-          description: The created user
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-  /users/{id}:
-    get:
-      summary: Get a user by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: The user data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-    put:
-      summary: Update a user by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-      responses:
-        "200":
-          description: The updated user
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-    delete:
-      summary: Delete a user by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      responses:
-        "204":
-          description: The user was deleted
-
-  /students:
-    get:
-      summary: List all students
-      responses:
-        "200":
-          description: A list of students
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Student"
-    post:
-      summary: Create a new student
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Student"
-      responses:
-        "201":
-          description: The created student
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Student"
-  /students/{id}:
-    get:
-      summary: Get a student by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: The student data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Student"
-    put:
-      summary: Update a student by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Student"
-      responses:
-        "200":
-          description: The updated student
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Student"
-    delete:
-      summary: Delete a student by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: The student was deleted
-
-  /private-boarding-owners:
-    get:
-      summary: List all private boarding owners
-      responses:
-        "200":
-          description: A list of private boarding owners
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/PrivateBoardingOwner"
-    post:
-      summary: Create a new private boarding owner
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PrivateBoardingOwner"
-      responses:
-        "201":
-          description: The created private boarding owner
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PrivateBoardingOwner"
-  /private-boarding-owners/{id}:
-    get:
-      summary: Get a private boarding owner by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: The private boarding owner data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PrivateBoardingOwner"
-    put:
-      summary: Update a private boarding owner by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PrivateBoardingOwner"
-      responses:
-        "200":
-          description: The updated private boarding owner
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PrivateBoardingOwner"
-    delete:
-      summary: Delete a private boarding owner by ID
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      responses:
-        "204":
-          description: The private boarding owner was deleted
-
-  /hostels/search:
-    get:
-      summary: Search hostels
-      parameters:
-        - in: query
-          name: location
-          required: false
-          schema:
-            type: string
-        - in: query
-          name: gender
-          required: false
-          schema:
-            type: string
-            enum: [MALE, FEMALE, MIXED]
-        - in: query
-          name: year
-          required: false
-          schema:
-            type: string
-            enum: [FIRST, SECOND, THIRD, FOURTH]
-      responses:
-        "200":
-          description: List of hostels matching the search criteria
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    hostel:
-                      $ref: "#/components/schemas/Hostel"
-                    rooms:
-                      type: array
-                      items:
-                        $ref: "#/components/schemas/Room"
-
-  /exchange-requests/{id}/update-state:
-    put:
-      summary: Update exchange request state to available
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                status:
-                  type: string
-                  enum: [AVAILABLE]
-      responses:
-        "200":
-          description: The updated exchange request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ExchangeRequest"
-
-  /apply-hostel:
-    post:
-      summary: Apply for a hostel
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                hostelId:
-                  type: integer
-                studentId:
-                  type: string
-      responses:
-        "201":
-          description: Applied for hostel
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-
-  /apply-exchange:
-    post:
-      summary: Apply for an exchange
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                fromUserId:
-                  type: string
-                toUserId:
-                  type: string
-      responses:
-        "201":
-          description: Applied for exchange
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
 
   /account:
     get:
@@ -703,3 +917,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
