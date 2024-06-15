@@ -35,8 +35,12 @@ router.put("/hostels/:id/rooms/:roomId", roomController.updateRoom);
 router.delete("/hostels/:id/rooms/:roomId", roomController.deleteRoom);
 
 // Exchange Request Routes
-router.get("/swap-requests", exchangeRequestController.getAllExchangeRequests);
-router.put("/swap-requests/:id", exchangeRequestController.updateExchangeRequest);
+router.put("/room-requests/:id", exchangeRequestController.updateExchangeRequest);
+router.get("/room-requests", exchangeRequestController.getAllExchangeRequests);
+router.post("/room-requests", exchangeRequestController.createExchangeRequest);
+router.delete("/room-requests/:id", exchangeRequestController.deleteExchangeRequest);
+
+
 
 
 // Private Boarding Owner Routes

@@ -953,7 +953,7 @@ export interface paths {
     };
   };
   "/room-requests/{id}": {
-    /** Accept or reject a swap request */
+    /** Apply a swap request */
     put: {
       parameters: {
         path: {
@@ -963,9 +963,43 @@ export interface paths {
       requestBody?: {
         content: {
           "application/json": {
-            /** @enum {string} */
-            status?: "ACCEPTED" | "REJECTED";
+            fromUserId?: string;
+            toUserId?: string;
           };
+        };
+      };
+      responses: {
+        /** @description The apply swap request */
+        200: {
+          content: {
+            "application/json": components["schemas"]["ExchangeRequest"];
+          };
+        };
+        /** @description Bad request */
+        400: {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+        /** @description Swap request not found */
+        404: {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+      };
+    };
+    /** Accept or reject a swap request */
+    delete: {
+      parameters: {
+        path: {
+          id: number;
         };
       };
       responses: {

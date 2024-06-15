@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+    log: ['query', 'info', 'warn', 'error']
+})
 
 async function main() {
     // Clear existing data
@@ -28,7 +30,7 @@ async function main() {
             }
         }
     })
-    const user3 = await prisma.user.create({
+    const user2 = await prisma.user.create({
         data: {
             id: 4,
             username: 'john_doe',
@@ -43,7 +45,7 @@ async function main() {
         }
     })
 
-    const user2 = await prisma.user.create({
+    const user3 = await prisma.user.create({
         data: {
             id: 5,
             username: 'jane_doe',
@@ -51,7 +53,9 @@ async function main() {
             email: 'jane@example.com',
             phoneNumber: '0987654321',
             privateBoardingOwner: {
-                create: {}
+                create: {
+
+                }
             }
         }
     })

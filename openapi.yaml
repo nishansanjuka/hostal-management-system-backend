@@ -1146,7 +1146,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
     post:
-      summary: Apply for an exchange
+      summary: user make available to swap state
       requestBody:
         content:
           application/json:
@@ -1177,7 +1177,7 @@ paths:
                 $ref: "#/components/schemas/Error"
   /room-requests/{id}:
     put:
-      summary: Accept or reject a swap request
+      summary: Apply a swap request
       parameters:
         - in: path
           name: id
@@ -1190,9 +1190,44 @@ paths:
             schema:
               type: object
               properties:
-                status:
+                fromUserId:
                   type: string
-                  enum: [ACCEPTED, REJECTED]
+                toUserId:
+                  type: string
+      responses:
+        "200":
+          description: The apply swap request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeRequest"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Swap request not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      summary: Accept or reject a swap request or user disable swap available state
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       responses:
         "200":
           description: The updated swap request

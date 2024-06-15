@@ -5,6 +5,7 @@ const userService = new UserService();
 
 export class UserController {
     async getAllUsers(req: Request, res: Response) {
+        console.log("UserController")
         try {
             const users = await userService.getAllUsers();
             res.json(users);

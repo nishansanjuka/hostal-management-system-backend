@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import { HostelPaths } from "../types/index";
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    log: ['query', 'info', 'warn', 'error'],
+});
 
 export class HostelController {
     async getAllHostels(req: Request<{}, {}, {}, HostelPaths['ListRequest']>, res: Response<HostelPaths['ListResponse']>) {
@@ -27,11 +29,18 @@ export class HostelController {
                         include: {
                             _count: {
                                 select: { students: true }
+                            },
+                            students: {
+                                include: {
+                                    exchangeRequestsToUser: true,
+                                    exchangeRequestsFromUser: true,
+                                }
                             }
                         },
                     },
                 },
             });
+
 
             res.status(200).json(hostels);
         } catch (error) {
@@ -39,6 +48,7 @@ export class HostelController {
             res.status(500).json({ error: 'Internal Server Error' });
         }
     }
+
 
     async getHostelById(req: Request<{ id: string }>, res: Response<HostelPaths["GetByIdResponse"]>) {
         const id = parseInt(req.params.id);
@@ -63,7 +73,8 @@ export class HostelController {
     }
 
     async createHostel(req: Request<{}, {}, HostelPaths['CreateRequest']>, res: Response<HostelPaths['CreateResponse']>) {
-        const { name, genderType, distance, location, year, rooms } = req.body;
+        let { name, genderType, distance, location, year, rooms } = req.body;
+        distance = parseFloat(distance as unknown as string);
         try {
             const newHostel = await prisma.hostel.create({
                 data: {
