@@ -1,61 +1,120 @@
 import { Request, Response } from "express";
-import { HostelService } from "../services/hostel";
+import { HostelPaths } from "../types/index";
+import { PrismaClient } from "@prisma/client";
 
-const hostelService = new HostelService();
+const prisma = new PrismaClient();
 
 export class HostelController {
-    async getAllHostels(req: Request, res: Response) {
+    async getAllHostels(req: Request<{}, {}, {}, HostelPaths['ListRequest']>, res: Response<HostelPaths['ListResponse']>) {
         try {
-            const hostels = await hostelService.getAllHostels();
-            res.json(hostels);
+            const { location, gender, year, limit, start } = req.query;
+
+            const filterOptions: any = {};
+            if (location) filterOptions.location = location;
+            if (gender) filterOptions.genderType = gender;
+            if (year) filterOptions.year = year;
+
+            const paginationOptions = {
+                skip: start ? Number(start) : undefined,
+                take: limit ? Number(limit) : undefined,
+            };
+
+            const hostels = await prisma.hostel.findMany({
+                where: filterOptions,
+                ...paginationOptions,
+                include: {
+                    rooms: {
+                        include: {
+                            _count: {
+                                select: { students: true }
+                            }
+                        },
+                    },
+                },
+            });
+
+            res.status(200).json(hostels);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            console.error('Error retrieving hostels:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     }
 
-    async getHostelById(req: Request, res: Response) {
-        const { id } = req.params;
+    async getHostelById(req: Request<{ id: string }>, res: Response<HostelPaths["GetByIdResponse"]>) {
+        const id = parseInt(req.params.id);
+        console.log(typeof (id))
         try {
-            const hostel = await hostelService.getHostelById(Number(id));
+            const hostel = await prisma.hostel.findUnique({
+                where: { id: id }, include: {
+                    _count: {
+                        select: { rooms: true }
+                    }
+                }
+            });
             if (!hostel) {
-                res.status(404).json({ message: "Hostel not found" });
+                res.status(404).json({ error: "Hostel not found" });
             } else {
                 res.json(hostel);
             }
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            console.error('Error retrieving hostel:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     }
 
-    async createHostel(req: Request, res: Response) {
-        const data = req.body;
+    async createHostel(req: Request<{}, {}, HostelPaths['CreateRequest']>, res: Response<HostelPaths['CreateResponse']>) {
+        const { name, genderType, distance, location, year, rooms } = req.body;
         try {
-            const newHostel = await hostelService.createHostel(data);
+            const newHostel = await prisma.hostel.create({
+                data: {
+                    name, genderType, distance, location, year, rooms: {
+                        create: rooms.map(room => ({
+                            capacity: room.capacity,
+                            beds: room.beds,
+                        }))
+                    }
+                }
+            });
             res.status(201).json(newHostel);
         } catch (error) {
-            res.status(400).json({ message: error.message });
+            if (error.code === 'P2002') {
+                console.error('Unique constraint violation: A hostel with this name already exists.');
+                res.status(400).json({ error: 'A hostel with this name already exists.' });
+            } else {
+                console.error('Error creating hostel:', error);
+                res.status(500).json({ error: 'Internal Server Error' });
+            }
         }
     }
 
-    async updateHostel(req: Request, res: Response) {
-        const { id } = req.params;
-        const data = req.body;
+    async updateHostel(req: Request<{ id: string }, {}, HostelPaths['UpdateRequest']>, res: Response<HostelPaths['UpdateResponse']>) {
+        let id = parseInt(req.params.id);
+        const { name, genderType, distance, location, year } = req.body;
         try {
-            const updatedHostel = await hostelService.updateHostel(Number(id), data);
+            const updatedHostel = await prisma.hostel.update({
+                where: { id }, data: {
+                    name, genderType, distance, location, year
+                }
+            })
             res.json(updatedHostel);
         } catch (error) {
-            res.status(400).json({ message: error.message });
+            console.error('Error updating hostel:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     }
 
-    async deleteHostel(req: Request, res: Response) {
-        const { id } = req.params;
+    async deleteHostel(req: Request<{ id: string }>, res: Response<HostelPaths['DeleteResponse']>) {
+        const id = parseInt(req.params.id);
         try {
-            await hostelService.deleteHostel(Number(id));
+            await prisma.hostel.delete({
+                where: { id }
+            });
             res.sendStatus(204);
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            console.error('Error deleting hostel:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     }
 }
+
 export default new HostelController();

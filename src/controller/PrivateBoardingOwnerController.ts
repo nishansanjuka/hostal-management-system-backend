@@ -33,7 +33,13 @@ export class PrivateBoardingOwnerController {
             const newOwner = await privateBoardingOwnerService.createPrivateBoardingOwner(data);
             res.status(201).json(newOwner);
         } catch (error) {
-            res.status(400).json({ message: error.message });
+            if (error.code === 'P2002') {
+                console.error('Unique constraint violation: A user with this email already exists.');
+                res.status(400).json({ message: 'A user with this email already exists.' });
+            } else {
+                console.error('An error occurred:', error);
+                res.status(400).json({ message: 'An error occurred.' });
+            }
         }
     }
 

@@ -8,44 +8,44 @@ datasource db {
 }
 
 model User {
-  id                   Int                    @id @default(autoincrement())
+  id                   Int                   @id @default(autoincrement())
   username             String
   password             String
-  role                 Role
-  Student              Student[]
-  PrivateBoardingOwner PrivateBoardingOwner[]
+  email                String                @unique
+  phoneNumber          String                @unique
+  role                 Role                  @default(STANDARD_USER)
+  student              Student?
+  privateBoardingOwner PrivateBoardingOwner?
 }
 
 enum Role {
   ADMIN
-  PRIVATE_BOARDING_OWNER
   STANDARD_USER
 }
 
 model Student {
   studentId                String            @id @unique
-  email                    String
-  phone_number             String
-  roomAllocations          RoomAllocation[]
-  ExchangeRequestsFromUser ExchangeRequest[] @relation("FromUser")
-  ExchangeRequestsToUser   ExchangeRequest[] @relation("ToUser")
   user                     User              @relation(fields: [userId], references: [id])
-  userId                   Int
+  userId                   Int               @unique
+  room                     Room?             @relation(fields: [roomId], references: [id])
+  roomId                   Int?
+  exchangeRequestsFromUser ExchangeRequest[] @relation("FromUser")
+  exchangeRequestsToUser   ExchangeRequest[] @relation("ToUser")
 }
 
 model PrivateBoardingOwner {
-  id              Int               @id @default(autoincrement())
-  email           String
-  phone_number    String
-  PrivateBoarding PrivateBoarding[]
-  user            User              @relation(fields: [userId], references: [id])
-  userId          Int
+  id               Int               @id @default(autoincrement())
+  user             User              @relation(fields: [userId], references: [id])
+  userId           Int               @unique
+  privateBoardings PrivateBoarding[]
 }
 
 model Hostel {
   id         Int        @id @default(autoincrement())
-  hostelName String
+  name       String     @unique
   genderType GenderType
+  distance   Float
+  location   String?    @default("Not specified")
   year       Year
   rooms      Room[]
 }
@@ -64,36 +64,21 @@ enum Year {
 }
 
 model Room {
-  id              Int              @id @default(autoincrement())
-  capacity        Int
-  beds            Int
-  hostel          Hostel           @relation(fields: [hostelId], references: [id])
-  hostelId        Int
-  roomAllocations RoomAllocation[]
-}
-
-model RoomAllocation {
-  id        Int              @id @default(autoincrement())
-  status    AllocationStatus
-  room      Room             @relation(fields: [roomId], references: [id])
-  roomId    Int
-  student   Student          @relation(fields: [studentId], references: [studentId])
-  studentId String
-}
-
-enum AllocationStatus {
-  ALLOCATED
-  AVAILABLE
-  REQUESTED
+  id       Int       @id @default(autoincrement())
+  capacity Int       @default(2)
+  beds     Int
+  hostel   Hostel    @relation(fields: [hostelId], references: [id])
+  hostelId Int
+  students Student[]
 }
 
 model ExchangeRequest {
   id         Int           @id @default(autoincrement())
-  status     RequestStatus
+  status     RequestStatus @default(PENDING)
   fromUser   Student       @relation("FromUser", fields: [fromUserId], references: [studentId])
   fromUserId String
-  toUser     Student       @relation("ToUser", fields: [toUserId], references: [studentId])
-  toUserId   String
+  toUser     Student?      @relation("ToUser", fields: [toUserId], references: [studentId])
+  toUserId   String?
 }
 
 enum RequestStatus {
@@ -104,17 +89,21 @@ enum RequestStatus {
 
 model PrivateBoarding {
   id            Int                  @id @default(autoincrement())
-  boardingName  String
-  location      String
+  name          String
+  location      String               @default("Not specified")
+  distance      Float
   owner         PrivateBoardingOwner @relation(fields: [ownerId], references: [id])
   ownerId       Int
+  description   String
   boardingRooms BoardingRoom[]
 }
 
 model BoardingRoom {
-  id         Int             @id @default(autoincrement())
-  capacity   Int
-  facilities String
-  boarding   PrivateBoarding @relation(fields: [boardingId], references: [id])
-  boardingId Int
+  id          Int             @id @default(autoincrement())
+  capacity    Int
+  facilities  String
+  boarding    PrivateBoarding @relation(fields: [boardingId], references: [id])
+  boardingId  Int
+  rent        Float
+  description String
 }

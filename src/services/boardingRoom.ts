@@ -2,11 +2,11 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 export class BoardingRoomService {
-    async createBoardingRoom(data: { capacity: number; facilities: string; boardingId: number }) {
-        return prisma.boardingRoom.create({
-            data
-        });
-    }
+    // async createBoardingRoom(data: { capacity: number; facilities: string; }) {
+    //     return prisma.boardingRoom.create({
+    //         data
+    //     });
+    // }
 
     async getBoardingRooms() {
         return prisma.boardingRoom.findMany();

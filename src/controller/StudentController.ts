@@ -31,9 +31,18 @@ export class StudentController {
         const data = req.body;
         try {
             const newStudent = await studentService.createStudent(data);
+            console.log(newStudent)
             res.status(201).json(newStudent);
         } catch (error) {
-            res.status(400).json({ message: error.message });
+            if (error.code === 'P2002') {
+                console.error('Unique constraint violation: A student with this email already exists.');
+                res.status(400).json({ message: 'A student with this email already exists.' });
+            } else {
+                console.error('An error occurred:', error);
+                res.status(400).json({ message: error.message });
+            }
+
+
         }
     }
 

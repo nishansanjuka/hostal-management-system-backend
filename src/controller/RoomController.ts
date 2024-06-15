@@ -33,7 +33,13 @@ export class RoomController {
             const newRoom = await roomService.createRoom(data);
             res.status(201).json(newRoom);
         } catch (error) {
-            res.status(400).json({ message: error.message });
+            if (error.code === 'P2002') {
+                console.error('Unique constraint violation: A room with this ID already exists.');
+                res.status(400).json({ message: 'A room with this ID already exists.' });
+            } else {
+                console.error('An error occurred:', error);
+                res.status(400).json({ message: error.message });
+            }
         }
     }
 
