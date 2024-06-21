@@ -50,6 +50,7 @@ components:
       enum:
         - ADMIN
         - STANDARD_USER
+        - BOARDING_OWNER
 
     Student:
       type: object
