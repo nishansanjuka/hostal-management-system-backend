@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 app.use(bodyParser.json());
 
 // Routes
-app.use('/api', router);
+app.use('', router);
 
 process.on('SIGINT', async () => {
     console.log('SIGINT signal received: closing Prisma Client');
