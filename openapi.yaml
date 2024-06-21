@@ -1,0 +1,1425 @@
+openapi: 3.0.0
+info:
+  title: Hostel Management API
+  description: API for managing hostel and private boarding systems
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+paths:
+  /api/hostels:
+    get:
+      summary: Show all hostels details
+      parameters:
+      - name: location
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: gender
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          enum:
+          - MALE
+          - FEMALE
+          - MIXED
+      - name: year
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          enum:
+          - FIRST
+          - SECOND
+          - THIRD
+          - FOURTH
+      - name: limit
+        in: query
+        description: "Limit the number of results per page (default: 10)."
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 1
+          type: integer
+          default: 10
+      - name: start
+        in: query
+        description: Start index of results (zero-based).
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          default: 0
+      responses:
+        "200":
+          description: A list of all hostels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Hostel'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal Server Error - Something went wrong on the server
+            side.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Hostel'
+      responses:
+        "201":
+          description: The created hostel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hostel'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal Server Error - Something went wrong on the server
+            side.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/hostels/{id}:
+    get:
+      summary: Get a hostel by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: The hostel data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hostel'
+        "400":
+          description: Bad request
+        "404":
+          description: Hostel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update a hostel by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Hostel'
+      responses:
+        "200":
+          description: The updated hostel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hostel'
+        "400":
+          description: Bad request
+        "404":
+          description: Hostel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a hostel by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "204":
+          description: The hostel was deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Hostel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/hostels/{id}/rooms:
+    get:
+      summary: List all rooms
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: A list of rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Hostel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new room
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Room'
+      responses:
+        "201":
+          description: The created room
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Hostel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/hostels/{id}/rooms/{roomId}:
+    get:
+      summary: Get a room by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: roomId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: The room data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update a room by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: roomId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Room'
+      responses:
+        "200":
+          description: The updated room
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a room by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: roomId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "204":
+          description: The room was deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/users:
+    get:
+      summary: List all users
+      responses:
+        "200":
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "201":
+          description: The created user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/users/{id}:
+    get:
+      summary: Get a user by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: The user data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update a user by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "200":
+          description: The updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a user by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "204":
+          description: The user was deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/students:
+    get:
+      summary: List all students
+      responses:
+        "200":
+          description: A list of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Student'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new student
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        "201":
+          description: The created student
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/students/{id}:
+    get:
+      summary: Get a student by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The student data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update a student by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+      responses:
+        "200":
+          description: The updated student
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a student by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: The student was deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/private-boarding-owners:
+    get:
+      summary: List all private boarding owners
+      responses:
+        "200":
+          description: A list of private boarding owners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrivateBoardingOwner'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new private boarding owner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrivateBoardingOwner'
+      responses:
+        "201":
+          description: The created private boarding owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateBoardingOwner'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/private-boarding-owners/{id}:
+    get:
+      summary: Get a private boarding owner by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: The private boarding owner data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateBoardingOwner'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Private boarding owner not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update a private boarding owner by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrivateBoardingOwner'
+      responses:
+        "200":
+          description: The updated private boarding owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateBoardingOwner'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Private boarding owner not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a private boarding owner by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "204":
+          description: The private boarding owner was deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Private boarding owner not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/exchange-requests/{id}/update-state:
+    put:
+      summary: Update exchange request state to available
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/id_updatestate_body'
+      responses:
+        "200":
+          description: The updated exchange request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRequest'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Exchange request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/apply-hostel:
+    post:
+      summary: Apply for a hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/api_applyhostel_body'
+      responses:
+        "201":
+          description: Applied for hostel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/room-requests:
+    get:
+      summary: Show all swap requests
+      responses:
+        "200":
+          description: A list of swap requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExchangeRequest'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: user make available to swap state
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/api_roomrequests_body'
+      responses:
+        "201":
+          description: Applied for exchange
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/room-requests/{id}:
+    get:
+      summary: Get a swap request by ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: The swap request by ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRequest'
+        "404":
+          description: Swap request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Apply a swap request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/roomrequests_id_body'
+      responses:
+        "200":
+          description: The apply swap request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRequest'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Swap request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Accept or reject a swap request or user disable swap available state
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: The updated swap request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRequest'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Swap request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/allocation-students:
+    post:
+      summary: Allocate students to hostels
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/api_allocationstudents_body'
+      responses:
+        "200":
+          description: Students allocated to hostels
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/account:
+    get:
+      summary: Show account details
+      parameters:
+      - name: userId
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The user account details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          type: string
+    User:
+      required:
+      - email
+      - password
+      - phoneNumber
+      - role
+      - username
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        student:
+          $ref: '#/components/schemas/Student'
+        privateBoardingOwner:
+          $ref: '#/components/schemas/PrivateBoardingOwner'
+    Role:
+      type: string
+      enum:
+      - ADMIN
+      - STANDARD_USER
+      - BOARDING_OWNER
+    Student:
+      required:
+      - studentId
+      - userId
+      type: object
+      properties:
+        studentId:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        userId:
+          type: integer
+          format: int64
+        room:
+          $ref: '#/components/schemas/Room'
+        roomId:
+          type: integer
+          format: int64
+        exchangeRequestsFromUser:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExchangeRequest'
+        exchangeRequestsToUser:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExchangeRequest'
+    PrivateBoardingOwner:
+      required:
+      - userId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user:
+          $ref: '#/components/schemas/User'
+        userId:
+          type: integer
+          format: int64
+        privateBoardings:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrivateBoarding'
+    Hostel:
+      required:
+      - distance
+      - genderType
+      - name
+      - year
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        genderType:
+          $ref: '#/components/schemas/GenderType'
+        distance:
+          type: number
+          format: float
+        location:
+          type: string
+          default: Not specified
+        year:
+          $ref: '#/components/schemas/Year'
+        rooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Room'
+    GenderType:
+      type: string
+      enum:
+      - MALE
+      - FEMALE
+      - MIXED
+    Year:
+      type: string
+      enum:
+      - FIRST
+      - SECOND
+      - THIRD
+      - FOURTH
+    Room:
+      required:
+      - beds
+      - hostelId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        capacity:
+          type: integer
+          default: 2
+        beds:
+          type: integer
+        hostel:
+          $ref: '#/components/schemas/Hostel'
+        hostelId:
+          type: integer
+          format: int64
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/Student'
+    ExchangeRequest:
+      required:
+      - fromUserId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        fromUser:
+          $ref: '#/components/schemas/Student'
+        fromUserId:
+          type: string
+        toUser:
+          $ref: '#/components/schemas/Student'
+        toUserId:
+          type: string
+    RequestStatus:
+      type: string
+      enum:
+      - PENDING
+      - ACCEPTED
+      - REJECTED
+    PrivateBoarding:
+      required:
+      - description
+      - distance
+      - name
+      - ownerId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        location:
+          type: string
+          default: Not specified
+        distance:
+          type: number
+          format: float
+        owner:
+          $ref: '#/components/schemas/PrivateBoardingOwner'
+        ownerId:
+          type: integer
+          format: int64
+        description:
+          type: string
+        boardingRooms:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoardingRoom'
+    BoardingRoom:
+      required:
+      - boardingId
+      - capacity
+      - description
+      - facilities
+      - rent
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        capacity:
+          type: integer
+        facilities:
+          type: string
+        boarding:
+          $ref: '#/components/schemas/PrivateBoarding'
+        boardingId:
+          type: integer
+          format: int64
+        rent:
+          type: number
+          format: float
+        description:
+          type: string
+    id_updatestate_body:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - AVAILABLE
+    api_applyhostel_body:
+      type: object
+      properties:
+        hostelId:
+          type: integer
+        studentId:
+          type: string
+    inline_response_201:
+      type: object
+      properties:
+        message:
+          type: string
+    api_roomrequests_body:
+      type: object
+      properties:
+        fromUserId:
+          type: string
+        toUserId:
+          type: string
+    roomrequests_id_body:
+      type: object
+      properties:
+        fromUserId:
+          type: string
+        toUserId:
+          type: string
+    apiallocationstudents_allocations:
+      type: object
+      properties:
+        studentId:
+          type: string
+        hostelId:
+          type: integer
+    api_allocationstudents_body:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+          - manual
+          - random
+        allocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/apiallocationstudents_allocations'
