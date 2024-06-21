@@ -249,7 +249,7 @@ components:
         - description
 
 paths:
-  /hostels:
+  /api/hostels:
     get:
       summary: Show all hostels details
       parameters:
@@ -325,7 +325,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /hostels/{id}:
+  /api/hostels/{id}:
     get:
       summary: Get a hostel by ID
       parameters:
@@ -423,7 +423,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /hostels/{id}/rooms:
+  /api/hostels/{id}/rooms:
     get:
       summary: List all rooms
       responses:
@@ -485,7 +485,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /hostels/{id}/rooms/{roomId}:
+  /api/hostels/{id}/rooms/{roomId}:
     get:
       summary: Get a room by ID
       parameters:
@@ -606,7 +606,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /users:
+  /api/users:
     get:
       summary: List all users
       responses:
@@ -648,7 +648,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /users/{id}:
+  /api/users/{id}:
     get:
       summary: Get a user by ID
       parameters:
@@ -754,7 +754,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /students:
+  /api/students:
     get:
       summary: List all students
       responses:
@@ -796,7 +796,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /students/{id}:
+  /api/students/{id}:
     get:
       summary: Get a student by ID
       parameters:
@@ -902,7 +902,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /private-boarding-owners:
+  /api/private-boarding-owners:
     get:
       summary: List all private boarding owners
       responses:
@@ -944,7 +944,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /private-boarding-owners/{id}:
+  /api/private-boarding-owners/{id}:
     get:
       summary: Get a private boarding owner by ID
       parameters:
@@ -1050,7 +1050,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /exchange-requests/{id}/update-state:
+  /api/exchange-requests/{id}/update-state:
     put:
       summary: Update exchange request state to available
       parameters:
@@ -1094,7 +1094,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /apply-hostel:
+  /api/apply-hostel:
     post:
       summary: Apply for a hostel
       requestBody:
@@ -1126,7 +1126,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /room-requests:
+  /api/room-requests:
     get:
       summary: Show all swap requests
       responses:
@@ -1176,7 +1176,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /room-requests/{id}:
+  /api/room-requests/{id}:
     get:
       summary: Get a swap request by ID
       parameters:
@@ -1283,7 +1283,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /allocation-students:
+  /api/allocation-students:
     post:
       summary: Allocate students to hostels
       requestBody:
@@ -1323,7 +1323,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /account:
+  /api/account:
     get:
       summary: Show account details
       parameters:
