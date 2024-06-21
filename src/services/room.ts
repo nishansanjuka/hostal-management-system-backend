@@ -13,8 +13,10 @@ export class RoomService {
         return prisma.room.findUnique({ where: { id } });
     }
 
-    async createRoom(data: Prisma.RoomCreateInput) {
-        return prisma.room.create({ data });
+    async createRoom(data: Prisma.RoomCreateManyInput) {
+        return prisma.room.createMany({
+            data: data
+        });
     }
 
     async updateRoom(id: number, data: Prisma.RoomUpdateInput) {
