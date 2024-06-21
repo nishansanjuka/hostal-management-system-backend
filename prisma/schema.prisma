@@ -21,11 +21,12 @@ model User {
 enum Role {
   ADMIN
   STANDARD_USER
+  BOARDING_OWNER
 }
 
 model Student {
   studentId                String            @id @unique
-  user                     User              @relation(fields: [userId], references: [id])
+  user                     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                   Int               @unique
   room                     Room?             @relation(fields: [roomId], references: [id])
   roomId                   Int?
@@ -35,7 +36,7 @@ model Student {
 
 model PrivateBoardingOwner {
   id               Int               @id @default(autoincrement())
-  user             User              @relation(fields: [userId], references: [id])
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId           Int               @unique
   privateBoardings PrivateBoarding[]
 }
@@ -67,7 +68,7 @@ model Room {
   id       Int       @id @default(autoincrement())
   capacity Int       @default(2)
   beds     Int
-  hostel   Hostel    @relation(fields: [hostelId], references: [id])
+  hostel   Hostel    @relation(fields: [hostelId], references: [id], onDelete: Cascade)
   hostelId Int
   students Student[]
 }
@@ -75,9 +76,9 @@ model Room {
 model ExchangeRequest {
   id         Int           @id @default(autoincrement())
   status     RequestStatus @default(PENDING)
-  fromUser   Student       @relation("FromUser", fields: [fromUserId], references: [studentId])
+  fromUser   Student       @relation("FromUser", fields: [fromUserId], references: [studentId], onDelete: Cascade)
   fromUserId String
-  toUser     Student?      @relation("ToUser", fields: [toUserId], references: [studentId])
+  toUser     Student?      @relation("ToUser", fields: [toUserId], references: [studentId], onDelete: Cascade)
   toUserId   String?
 }
 
@@ -92,7 +93,7 @@ model PrivateBoarding {
   name          String
   location      String               @default("Not specified")
   distance      Float
-  owner         PrivateBoardingOwner @relation(fields: [ownerId], references: [id])
+  owner         PrivateBoardingOwner @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId       Int
   description   String
   boardingRooms BoardingRoom[]
@@ -102,7 +103,7 @@ model BoardingRoom {
   id          Int             @id @default(autoincrement())
   capacity    Int
   facilities  String
-  boarding    PrivateBoarding @relation(fields: [boardingId], references: [id])
+  boarding    PrivateBoarding @relation(fields: [boardingId], references: [id], onDelete: Cascade)
   boardingId  Int
   rent        Float
   description String

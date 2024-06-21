@@ -1176,6 +1176,34 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
   /room-requests/{id}:
+    get:
+      summary: Get a swap request by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The swap request by ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeRequest"
+        "404":
+          description: Swap request not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
     put:
       summary: Apply a swap request
       parameters:
