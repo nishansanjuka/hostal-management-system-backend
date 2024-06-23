@@ -10,7 +10,31 @@ export class ExchangeRequestService {
     }
 
     async getExchangeRequestById(id: number) {
-        return prisma.exchangeRequest.findUnique({ where: { id } });
+        return prisma.exchangeRequest.findUnique({
+            where: { id },
+            include: {
+                fromUser: {
+                    include: {
+                        user: true,
+                        room: {
+                            include: {
+                                hostel: true
+                            }
+                        }
+                    }
+                },
+                toUser: {
+                    include: {
+                        user: true,
+                        room: {
+                            include: {
+                                hostel: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     // user make avalable state for swap
@@ -76,7 +100,6 @@ export class ExchangeRequestService {
     // user disable avalable state for swap or admin reject swap request
     async deleteExchangeRequest(id: number) {
         try {
-
             const deletedRequest = await prisma.exchangeRequest.delete({
                 where: { id },
             });

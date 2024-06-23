@@ -55,12 +55,29 @@ export class HostelController {
         console.log(typeof (id))
         try {
             const hostel = await prisma.hostel.findUnique({
-                where: { id: id }, include: {
-                    _count: {
-                        select: { rooms: true }
+                where: { id: id },
+                include: {
+                    rooms: {
+                        include: {
+                            students: {
+                                include: {
+                                    exchangeRequestsFromUser: {
+                                        where: {
+                                            status: 'PENDING'
+                                        }
+                                    },
+                                    exchangeRequestsToUser: {
+                                        where: {
+                                            status: 'PENDING'
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             });
+
             if (!hostel) {
                 res.status(404).json({ error: "Hostel not found" });
             } else {
@@ -123,7 +140,12 @@ export class HostelController {
             res.sendStatus(204);
         } catch (error) {
             console.error('Error deleting hostel:', error);
-            res.status(500).json({ error: 'Internal Server Error' });
+
+            if (error.code === 'P2025') {
+                res.status(404).json({ error: 'Hostel not found' });
+            } else {
+                res.status(500).json({ error: 'Internal Server Error' });
+            }
         }
     }
 }

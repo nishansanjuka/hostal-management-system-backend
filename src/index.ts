@@ -4,14 +4,14 @@ import router from './router.';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 const prisma = new PrismaClient();
 
 // Middleware
 app.use(bodyParser.json());
 
 // Routes
-app.use('/', router);
+app.use('', router);
 
 process.on('SIGINT', async () => {
     console.log('SIGINT signal received: closing Prisma Client');
