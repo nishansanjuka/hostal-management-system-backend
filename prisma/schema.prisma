@@ -9,24 +9,25 @@ datasource db {
 
 model User {
   id                   Int                   @id @default(autoincrement())
+  clerkId              String                @unique
   username             String
-  password             String
   email                String                @unique
-  phoneNumber          String                @unique
+  phoneNumber          String?
   role                 Role                  @default(STANDARD_USER)
   student              Student?
   privateBoardingOwner PrivateBoardingOwner?
+  Warden               Warden?
 }
 
 enum Role {
   ADMIN
   STANDARD_USER
-  BOARDING_OWNER
+  WARDEN
 }
 
 model Student {
   studentId                String            @id @unique
-  user                     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                     User              @relation(fields: [userId], references: [id])
   userId                   Int               @unique
   room                     Room?             @relation(fields: [roomId], references: [id])
   roomId                   Int?
@@ -36,9 +37,15 @@ model Student {
 
 model PrivateBoardingOwner {
   id               Int               @id @default(autoincrement())
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User              @relation(fields: [userId], references: [id])
   userId           Int               @unique
   privateBoardings PrivateBoarding[]
+}
+
+model Warden {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @unique
 }
 
 model Hostel {
@@ -68,7 +75,7 @@ model Room {
   id       Int       @id @default(autoincrement())
   capacity Int       @default(2)
   beds     Int
-  hostel   Hostel    @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  hostel   Hostel    @relation(fields: [hostelId], references: [id])
   hostelId Int
   students Student[]
 }
@@ -76,9 +83,9 @@ model Room {
 model ExchangeRequest {
   id         Int           @id @default(autoincrement())
   status     RequestStatus @default(PENDING)
-  fromUser   Student       @relation("FromUser", fields: [fromUserId], references: [studentId], onDelete: Cascade)
+  fromUser   Student       @relation("FromUser", fields: [fromUserId], references: [studentId])
   fromUserId String
-  toUser     Student?      @relation("ToUser", fields: [toUserId], references: [studentId], onDelete: Cascade)
+  toUser     Student?      @relation("ToUser", fields: [toUserId], references: [studentId])
   toUserId   String?
 }
 
@@ -93,7 +100,7 @@ model PrivateBoarding {
   name          String
   location      String               @default("Not specified")
   distance      Float
-  owner         PrivateBoardingOwner @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner         PrivateBoardingOwner @relation(fields: [ownerId], references: [id])
   ownerId       Int
   description   String
   boardingRooms BoardingRoom[]
@@ -103,7 +110,7 @@ model BoardingRoom {
   id          Int             @id @default(autoincrement())
   capacity    Int
   facilities  String
-  boarding    PrivateBoarding @relation(fields: [boardingId], references: [id], onDelete: Cascade)
+  boarding    PrivateBoarding @relation(fields: [boardingId], references: [id])
   boardingId  Int
   rent        Float
   description String
