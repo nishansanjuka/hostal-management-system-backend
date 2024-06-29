@@ -36,4 +36,28 @@ export class RoomService {
     async deleteRoom(roomId: number, hostelId: number) {
         return prisma.room.delete({ where: { id: roomId, hostelId: hostelId } });
     }
+
+    async connectUserToRoom(userId: number, roomId: number) {
+        try {
+            const student = await prisma.student.findUnique({
+                where: { userId },
+            });
+        
+            if (!student) {
+                throw new Error(`No student found with userId: ${userId}`);
+            }
+        
+            const updatedStudent = await prisma.student.update({
+                where: { userId },
+                data: { roomId },
+            });
+        
+            return updatedStudent;
+        } catch (error) {
+            console.error('Error connecting user to room:', error);
+            throw error;
+        } finally {
+            await prisma.$disconnect();
+        }
+    }
 }

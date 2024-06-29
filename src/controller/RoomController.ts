@@ -85,4 +85,14 @@ export class RoomController {
             }
         }
     }
+
+    async connectUserToRoom(req: Request, res: Response) {
+        try {
+            const { userId, roomId } = req.params;
+            await roomService.connectUserToRoom(Number(userId),Number(roomId))
+        } catch (error) {
+            console.error('Error connecting user to room:', error);
+            res.json(error)
+        }
+    }
 }
