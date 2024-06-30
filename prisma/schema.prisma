@@ -24,6 +24,10 @@ enum Role {
   STANDARD_USER
   WARDEN
 }
+enum Variant {
+  INSIDE
+  OUTSIDE
+}
 
 model Student {
   studentId                String            @id @default(uuid())
@@ -56,6 +60,7 @@ model Hostel {
   location   String?    @default("Not specified")
   year       Year
   rooms      Room[]
+  variant    Variant
 }
 
 enum GenderType {
