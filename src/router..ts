@@ -33,6 +33,8 @@ router.post("/hostels/:id/rooms", roomController.createRoom);
 router.get("/hostels/:id/rooms/:roomId", roomController.getRoomById);
 router.put("/hostels/:id/rooms/:roomId", roomController.updateRoom);
 router.delete("/hostels/:id/rooms/:roomId", roomController.deleteRoom);
+// Connect User to Room Route
+router.post("/connect-room/:userId/:roomId", roomController.connectUserToRoom);
 
 // Exchange Request Routes
 router.put("/room-requests/:id", exchangeRequestController.updateExchangeRequest);
